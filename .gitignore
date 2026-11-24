@@ -29,4 +29,5 @@ tmp/
 Thumbs.db
 desktop.ini
 
-# Note: .opencode/skills is the deliverable and must stay tracked.
+# Note: .opencode/skills/fluidui is a thin discovery adapter and must stay tracked.
+# The authoritative skill is the repository-root SKILL.md.

@@ -2,27 +2,25 @@
 
 **Date:** 2026-11-25
 **Fixture:** `tests/fixtures/basic-page.html` — plain navbar, hero, two buttons, three cards, footer.
-**Method:** A fresh agent session loaded the skill by ID with the `skill` tool, inspected the fixture, and returned an analysis-only report. No files were edited during the test.
+**Method:** A fresh agent session loaded the `fluidui` skill through the available skill-loading mechanism, inspected the fixture, and returned an analysis-only report. No fixture files were edited.
 
 ## Result: passed
 
 | Check | Result | Notes |
 | --- | --- | --- |
-| Skill discovery/loading by ID `fluidui` | Passed | Loaded through OpenCode's `skill` tool; SKILL.md plus reference file sample returned. |
+| Skill discovery/loading by ID `fluidui` | Passed | Loaded in a fresh session; the thin OpenCode adapter resolved to the root platform-neutral `SKILL.md`. |
+| Core portability | Passed | Loaded instructions contained no OpenCode, Claude, Cursor, Gemini, or Codex commands; reference paths used the portable `references/` layout. |
 | Weakness identification | Passed | Flat hierarchy, default Arial, ad hoc inline spacing, missing states, fixed-width cards that overflow, no motion, no reduced-motion fallback, heading-order issues, vague labels. |
 | Purpose-fit direction | Passed | Chose calm editorial from evidence, defined type/space/color/motion tokens, and explained why. |
 | Intervention scope | Passed | Chose refinement plus light layout work rather than redesign, with rationale. |
-| Concrete plan | Passed | Tokens, heading order, semantic labels, real CTAs, adaptive card grid, interaction states, restrained reveal, verification steps. |
-| Testing guidance clarity | Passed | Agent confirmed reduced motion, responsive widths, keyboard access, focus visibility, and honest reporting were explicit. |
-| Browser inspection | Not tested | The test deliberately used source inspection only. Browser checks were performed separately against the shipped examples, not this fixture. |
+| Concrete plan | Passed | Tokens, heading order, semantic labels, real CTAs, adaptive card grid, interaction states, restrained reveal, keyboard/reduced-motion verification. |
+| Honest reporting | Passed | Separated passed checks from items requiring a browser or not tested. |
 
-## Gaps found and fixed
+## Universal upgrade re-check
 
-1. **Breakpoint values were implicit** → added practical checkpoints (360/390/768/1024/1440 px) to `SKILL.md`.
-2. **Scope categories overlapped** → added explicit definitions for layout change, partial redesign, and full redesign in `references/design-decisions.md`.
-3. **The scenario description hinted at the answer** → removed the prescriptive style label from `references/testing-and-reporting.md`; direction must come from inspection.
-4. **Browser-unavailable behavior was only in a reference** → added an explicit rule to `SKILL.md` to mark visual checks as not tested when no browser tool exists.
+After moving the authoritative skill to the repository root and adding platform documentation:
 
-## Conclusion
-
-The skill was discoverable, understandable, and produced an evidence-based design and motion plan without over-designing a simple page. The identified gaps were corrected before publication.
+- `node scripts/validate.mjs` → 14/14 passed.
+- OpenCode discovery was re-tested in a fresh session and still resolved the skill by ID `fluidui`.
+- The five examples were renamed (`minimal`, `futuristic`, `dashboard`, `animated-landing`, `mobile-app`) with no content changes; browser interaction results from the earlier run remain applicable.
+- Other platforms are documented from official sources but marked **not runtime-tested** because their CLIs were unavailable or no live discovery test was performed.

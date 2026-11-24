@@ -25,7 +25,7 @@ Run the project's own build/lint/typecheck/tests before and after changes. Inspe
 - Examples open as standalone HTML, with no external network dependency or console errors.
 - `prefers-reduced-motion`, responsive guidance, performance guidance, and safety constraints appear in `SKILL.md`.
 - No secrets, absolute personal paths, or unrelated project files are included.
-- Confirm OpenCode discovers the skill (loading it by ID in a fresh session is the strongest check).
+- Confirm a host agent discovers the skill if one is available; loading it by ID in a fresh session is the strongest check. If no host is available, mark discovery as not tested.
 
 ## Report honesty
 
