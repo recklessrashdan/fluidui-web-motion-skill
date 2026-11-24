@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Northline — Spatial design studio</title>
+<style>
+  :root {
+    --paper: #f5f2ec;
+    --ink: #1b211f;
+    --muted: #626b66;
+    --clay: #a34e32;
+    --line: #d9d4ca;
+    --ease: cubic-bezier(.22, 1, .36, 1);
+    --step-0: 1rem;
+    --step-1: 1.25rem;
+    --step-2: clamp(1.5rem, 2.5vw, 2rem);
+    --step-3: clamp(2.2rem, 6vw, 4.5rem);
+    --gutter: clamp(1.25rem, 5vw, 5rem);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 400 var(--step-0)/1.6 "Iowan Old Style", Georgia, serif; }
+  a { color: inherit; }
+  .wrap { width: min(1120px, 100% - 2 * var(--gutter)); margin-inline: auto; }
+  .site-head { border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--paper) 92%, transparent); position: sticky; top: 0; z-index: 5; backdrop-filter: blur(8px); }
+  .head-inner { display: flex; align-items: center; gap: 1.5rem; min-height: 72px; flex-wrap: wrap; }
+  .brand { font-family: ui-sans-serif, system-ui, sans-serif; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; font-size: .8rem; text-decoration: none; margin-right: auto; }
+  .brand span { color: var(--clay); }
+  .site-nav { display: flex; gap: 1.25rem; flex-wrap: wrap; font-family: ui-sans-serif, system-ui, sans-serif; font-size: .875rem; }
+  .site-nav a { text-decoration: none; padding: .5rem 0; position: relative; }
+  .site-nav a::after { content: ""; position: absolute; left: 0; right: 100%; bottom: .25rem; height: 1px; background: var(--clay); transition: right .25s var(--ease); }
+  .site-nav a:hover::after, .site-nav a:focus-visible::after { right: 0; }
+  :focus-visible { outline: 2px solid var(--clay); outline-offset: 3px; }
+  .hero { padding: clamp(4rem, 12vw, 9rem) 0 4rem; display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, .6fr); gap: clamp(2rem, 6vw, 5rem); align-items: end; }
+  .eyebrow { font: 600 .75rem/1 ui-sans-serif, system-ui, sans-serif; letter-spacing: .18em; text-transform: uppercase; color: var(--clay); margin: 0 0 1.5rem; }
+  h1 { font-size: var(--step-3); line-height: 1.03; letter-spacing: -.035em; font-weight: 400; margin: 0; max-width: 16ch; }
+  h1 em { font-style: italic; color: var(--clay); }
+  .lead { font-size: var(--step-1); color: var(--muted); max-width: 46ch; margin: 1.75rem 0 2rem; }
+  .actions { display: flex; gap: .75rem; flex-wrap: wrap; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: .7rem 1.25rem; border-radius: 2px; font: 600 .875rem/1 ui-sans-serif, system-ui, sans-serif; text-decoration: none; border: 1px solid transparent; cursor: pointer; transition: transform .18s var(--ease), background-color .18s var(--ease), border-color .18s var(--ease); }
+  .btn-primary { background: var(--ink); color: var(--paper); }
+  .btn-primary:hover { background: var(--clay); transform: translateY(-2px); }
+  .btn-secondary { border-color: var(--line); background: transparent; }
+  .btn-secondary:hover { border-color: var(--ink); transform: translateY(-2px); }
+  .btn:active { transform: translateY(0) scale(.99); }
+  .hero-note { border-left: 2px solid var(--clay); padding-left: 1.25rem; color: var(--muted); font-size: .95rem; }
+  .hero-note strong { display: block; color: var(--ink); font-family: ui-sans-serif, system-ui, sans-serif; font-size: 1.75rem; font-weight: 600; margin-bottom: .25rem; }
+  .section { padding: clamp(3rem, 8vw, 6rem) 0; border-top: 1px solid var(--line); }
+  .section-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin-bottom: 2.5rem; }
+  h2 { font: 400 clamp(1.6rem, 3.5vw, 2.4rem)/1.15 Georgia, serif; letter-spacing: -.02em; margin: 0; }
+  .section-head p { margin: 0; color: var(--muted); font-family: ui-sans-serif, system-ui, sans-serif; font-size: .875rem; }
+  .work-list { list-style: none; margin: 0; padding: 0; }
+  .work-list li { border-top: 1px solid var(--line); }
+  .work-list li:last-child { border-bottom: 1px solid var(--line); }
+  .work-list a { display: grid; grid-template-columns: 3rem 1fr auto; gap: 1rem; align-items: center; padding: 1.5rem .5rem; text-decoration: none; transition: padding .25s var(--ease), background-color .25s var(--ease); }
+  .work-list a:hover, .work-list a:focus-visible { padding-left: 1rem; background: color-mix(in srgb, var(--clay) 6%, transparent); }
+  .work-list .num { font: .75rem ui-monospace, monospace; color: var(--muted); }
+  .work-list .name { font-size: clamp(1.15rem, 2.4vw, 1.65rem); }
+  .work-list .meta { color: var(--muted); font: .8rem ui-sans-serif, system-ui, sans-serif; text-transform: uppercase; letter-spacing: .1em; }
+  .closing { display: grid; grid-template-columns: 1fr auto; gap: 2rem; align-items: end; }
+  .closing p { max-width: 52ch; color: var(--muted); }
+  footer { border-top: 1px solid var(--line); padding: 2rem 0; font: .8125rem ui-sans-serif, system-ui, sans-serif; color: var(--muted); display: flex; gap: 1rem; justify-content: space-between; flex-wrap: wrap; }
+  .js [data-reveal] { opacity: 0; transform: translateY(14px); transition: opacity .45s var(--ease), transform .45s var(--ease); }
+  .js [data-reveal].is-visible { opacity: 1; transform: none; }
+  @media (max-width: 760px) {
+    .hero { grid-template-columns: 1fr; }
+    .hero-note { max-width: 30rem; }
+    .closing { grid-template-columns: 1fr; }
+    .work-list a { grid-template-columns: 2rem 1fr; }
+    .work-list .meta { grid-column: 2; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+    .js [data-reveal] { opacity: 1; transform: none; }
+  }
+</style>
+</head>
+<body>
+<header class="site-head">
+  <div class="wrap head-inner">
+    <a class="brand" href="#top">North<span>line</span></a>
+    <nav class="site-nav" aria-label="Primary">
+      <a href="#work">Work</a><a href="#approach">Approach</a><a href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+<main id="top">
+  <section class="wrap hero">
+    <div>
+      <p class="eyebrow" data-reveal>Independent spatial design studio · Est. 2014</p>
+      <h1 data-reveal>Quiet spaces for <em>complex</em> lives.</h1>
+      <p class="lead" data-reveal>We shape homes, workplaces, and public rooms around how people actually move through them — with restraint, warmth, and lasting materials.</p>
+      <div class="actions" data-reveal>
+        <a class="btn btn-primary" href="#work">See selected work</a>
+        <a class="btn btn-secondary" href="#contact">Start a project</a>
+      </div>
+    </div>
+    <aside class="hero-note" data-reveal>
+      <strong>32</strong>
+      Completed spaces across fourteen cities, each shaped with the same patient attention to light and detail.
+    </aside>
+  </section>
+  <section class="section" id="work">
+    <div class="wrap">
+      <div class="section-head" data-reveal><h2>Selected work</h2><p>2021 — 2026</p></div>
+      <ul class="work-list">
+        <li data-reveal><a href="#contact"><span class="num">01</span><span class="name">Alder House</span><span class="meta">Residential</span></a></li>
+        <li data-reveal><a href="#contact"><span class="num">02</span><span class="name">Foundry Commons</span><span class="meta">Workplace</span></a></li>
+        <li data-reveal><a href="#contact"><span class="num">03</span><span class="name">The Long Gallery</span><span class="meta">Cultural</span></a></li>
+      </ul>
+    </div>
+  </section>
+  <section class="section" id="approach">
+    <div class="wrap closing">
+      <div data-reveal>
+        <p class="eyebrow">Approach</p>
+        <h2>Measure twice. Draw once. Then listen.</h2>
+        <p>Every project begins on site, with a study of light, sound, and the routines of the people who will use the space. The result is never a style applied to a floor plan — it is the floor plan, clarified.</p>
+      </div>
+      <a class="btn btn-secondary" href="#contact" data-reveal>Read our process</a>
+    </div>
+  </section>
+</main>
+<footer id="contact">
+  <div class="wrap">
+    <span>Northline Studio · hello@northline.example</span>
+    <span>Design that holds up.</span>
+  </div>
+</footer>
+<script>
+  document.documentElement.classList.add('js');
+  var items = document.querySelectorAll('[data-reveal]');
+  function showAll() { items.forEach(function (el) { el.classList.add('is-visible'); }); }
+  if ('IntersectionObserver' in window) {
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) { entry.target.classList.add('is-visible'); observer.unobserve(entry.target); }
+      });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: .08 });
+    items.forEach(function (el) { observer.observe(el); });
+  } else { showAll(); }
+</script>
+</body>
+</html>

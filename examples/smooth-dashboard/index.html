@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aperture — Operations dashboard</title>
+<style>
+  :root {
+    --bg: #f4f6f3;
+    --panel: #ffffff;
+    --ink: #15231e;
+    --muted: #66736d;
+    --line: #dde4de;
+    --green: #16775a;
+    --amber: #b67520;
+    --ease: cubic-bezier(.22, 1, .36, 1);
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 400 .9375rem/1.5 ui-sans-serif, system-ui, sans-serif; }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+  .app { display: grid; grid-template-columns: 220px minmax(0, 1fr); min-height: 100vh; }
+  .side { border-right: 1px solid var(--line); background: #eef2ee; padding: 1.5rem 1rem; }
+  .brand { display: flex; align-items: center; gap: .6rem; font-weight: 700; letter-spacing: -.02em; text-decoration: none; margin-bottom: 2rem; }
+  .brand i { width: 22px; height: 22px; border-radius: 7px; background: var(--green); display: inline-block; }
+  .side nav { display: grid; gap: .25rem; }
+  .side nav a { padding: .65rem .75rem; border-radius: 8px; text-decoration: none; color: var(--muted); font-size: .875rem; transition: background-color .18s var(--ease), color .18s var(--ease); }
+  .side nav a:hover, .side nav a:focus-visible { background: #ffffffaa; color: var(--ink); }
+  .side nav a[aria-current="page"] { background: #fff; color: var(--green); font-weight: 600; }
+  .side-foot { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .75rem; }
+  .main { min-width: 0; }
+  .top { display: flex; align-items: center; gap: 1rem; padding: 1rem clamp(1rem, 3vw, 2rem); border-bottom: 1px solid var(--line); background: #ffffffcc; position: sticky; top: 0; z-index: 3; backdrop-filter: blur(10px); }
+  .top h1 { font-size: 1.05rem; margin: 0 auto 0 0; letter-spacing: -.02em; }
+  input[type="search"] { min-height: 38px; border: 1px solid var(--line); border-radius: 8px; padding: 0 .75rem; font: inherit; background: #fff; width: min(230px, 38vw); }
+  input[type="search"]:focus { border-color: var(--green); box-shadow: 0 0 0 3px #16775a22; outline: none; }
+  .btn { min-height: 38px; border: 1px solid var(--line); background: #fff; color: var(--ink); border-radius: 8px; padding: 0 .9rem; font: 600 .8125rem ui-sans-serif, system-ui, sans-serif; cursor: pointer; transition: transform .16s var(--ease), border-color .16s var(--ease); }
+  .btn:hover { border-color: var(--green); transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+  .btn:disabled { opacity: .55; cursor: progress; transform: none; }
+  .content { padding: clamp(1rem, 3vw, 2rem); display: grid; gap: 1.25rem; max-width: 1400px; }
+  .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 1.15rem; }
+  .label { color: var(--muted); font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; margin: 0; }
+  .value { font-size: clamp(1.5rem, 3vw, 2rem); letter-spacing: -.04em; font-weight: 650; margin: .35rem 0 .2rem; font-variant-numeric: tabular-nums; }
+  .delta { font-size: .78rem; color: var(--green); }
+  .delta.down { color: var(--amber); }
+  .grid-2 { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(260px, 1fr); gap: 1rem; }
+  .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .panel-head h2 { font-size: 1rem; margin: 0; }
+  .ranges { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .ranges button { border: 0; background: transparent; padding: .45rem .7rem; font-size: .75rem; color: var(--muted); cursor: pointer; }
+  .ranges button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+  .chart { height: 190px; display: flex; align-items: flex-end; gap: clamp(4px, 1.2vw, 12px); padding-top: 1rem; border-bottom: 1px solid var(--line); }
+  .bar { flex: 1; min-width: 6px; height: 100%; background: linear-gradient(180deg, #35a880, var(--green)); border-radius: 4px 4px 0 0; transform: scaleY(var(--h, .5)); transform-origin: bottom; transition: transform .45s var(--ease); }
+  .axis { display: flex; justify-content: space-between; color: var(--muted); font-size: .7rem; margin-top: .5rem; }
+  .activity { list-style: none; padding: 0; margin: 0; }
+  .activity li { display: flex; gap: .75rem; align-items: baseline; padding: .75rem 0; border-bottom: 1px solid var(--line); }
+  .activity li:last-child { border-bottom: 0; }
+  .activity li[hidden] { display: none; }
+  .activity .time { color: var(--muted); font-size: .75rem; min-width: 3.5rem; font-variant-numeric: tabular-nums; }
+  .activity .who { font-weight: 600; }
+  .empty { text-align: center; color: var(--muted); padding: 2rem 1rem; }
+  .empty[hidden], .activity[hidden] { display: none; }
+  .skeleton { position: absolute; inset: 0; background: var(--panel); border-radius: var(--radius); padding: 1.15rem; display: none; }
+  .chart-wrap { position: relative; }
+  .chart-wrap[aria-busy="true"] .skeleton { display: grid; align-content: end; gap: .75rem; }
+  .sk-line { height: 14px; border-radius: 6px; background: linear-gradient(90deg, #e8ede8, #f6f8f6, #e8ede8); background-size: 200% 100%; animation: shimmer 1.2s linear infinite; }
+  @keyframes shimmer { to { background-position: -200% 0; } }
+  .status { color: var(--muted); font-size: .75rem; }
+  @media (max-width: 980px) { .grid-2 { grid-template-columns: 1fr; } .stats { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); } }
+  @media (max-width: 720px) {
+    .app { grid-template-columns: 1fr; }
+    .side { border-right: 0; border-bottom: 1px solid var(--line); padding: .75rem 1rem; }
+    .brand { margin-bottom: .75rem; }
+    .side nav { display: flex; gap: .35rem; overflow-x: auto; }
+    .side-foot { display: none; }
+    .top { flex-wrap: wrap; }
+    input[type="search"] { width: 100%; order: 3; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <a class="brand" href="#overview"><i aria-hidden="true"></i> Aperture</a>
+    <nav aria-label="Sections">
+      <a href="#overview" aria-current="page">Overview</a>
+      <a href="#performance">Performance</a>
+      <a href="#activity">Activity</a>
+    </nav>
+    <p class="side-foot">Workspace: North region<br>Synced 2 min ago</p>
+  </aside>
+  <div class="main">
+    <div class="top">
+      <h1>Good morning, Rae</h1>
+      <input id="search" type="search" placeholder="Filter activity" aria-label="Filter activity">
+      <button class="btn" id="refresh" type="button">Refresh</button>
+    </div>
+    <main class="content" id="overview">
+      <section class="stats" aria-label="Key metrics">
+        <div class="card"><p class="label">Throughput</p><p class="value">12,840</p><span class="delta">↑ 8.2% vs last week</span></div>
+        <div class="card"><p class="label">Median response</p><p class="value">1.4 h</p><span class="delta">↓ 12 min vs last week</span></div>
+        <div class="card"><p class="label">Backlog</p><p class="value">37</p><span class="delta down">↑ 4 items</span></div>
+      </section>
+      <div class="grid-2">
+        <section class="card chart-wrap" id="performance" aria-busy="false">
+          <div class="panel-head">
+            <h2>Throughput trend</h2>
+            <div class="ranges" role="group" aria-label="Chart range">
+              <button type="button" data-range="7" aria-pressed="true">7d</button>
+              <button type="button" data-range="30" aria-pressed="false">30d</button>
+              <button type="button" data-range="90" aria-pressed="false">90d</button>
+            </div>
+          </div>
+          <div class="chart" id="chart" aria-label="Throughput over time"></div>
+          <div class="axis"><span>Start</span><span class="status" id="updated">Updated just now</span><span>Today</span></div>
+          <div class="skeleton" aria-hidden="true"><div class="sk-line" style="width:60%"></div><div class="sk-line" style="width:90%"></div><div class="sk-line" style="width:75%"></div></div>
+        </section>
+        <section class="card" id="activity">
+          <div class="panel-head"><h2>Recent activity</h2><span class="status" id="count">4 events</span></div>
+          <ul class="activity" id="list">
+            <li><span class="time">09:42</span><span><span class="who">Mira</span> published the Q3 review</span></li>
+            <li><span class="time">09:18</span><span><span class="who">Owen</span> resolved 6 queue items</span></li>
+            <li><span class="time">08:55</span><span><span class="who">Rae</span> adjusted the capacity plan</span></li>
+            <li><span class="time">08:30</span><span><span class="who">System</span> completed nightly sync</span></li>
+          </ul>
+          <p class="empty" id="empty" hidden>No events match “<span id="term"></span>”. Try a different search.</p>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+<script>
+  (function () {
+    var chart = document.getElementById('chart');
+    var series = {
+      '7': [.38, .52, .44, .68, .61, .82, .74, .9, .7, .86, .96, .78],
+      '30': [.42, .35, .58, .49, .66, .55, .72, .63, .8, .69, .88, .8],
+      '90': [.3, .46, .4, .62, .52, .7, .58, .76, .68, .84, .72, .92]
+    };
+    function draw(range) {
+      chart.innerHTML = '';
+      series[range].forEach(function (v) {
+        var bar = document.createElement('span');
+        bar.className = 'bar';
+        bar.style.setProperty('--h', v);
+        chart.appendChild(bar);
+      });
+    }
+    draw('7');
+    document.querySelectorAll('[data-range]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('[data-range]').forEach(function (b) { b.setAttribute('aria-pressed', String(b === btn)); });
+        draw(btn.dataset.range);
+      });
+    });
+
+    var input = document.getElementById('search');
+    var rows = Array.prototype.slice.call(document.querySelectorAll('#list li'));
+    var empty = document.getElementById('empty');
+    input.addEventListener('input', function () {
+      var q = input.value.trim().toLowerCase();
+      var shown = 0;
+      rows.forEach(function (row) {
+        var match = row.textContent.toLowerCase().indexOf(q) !== -1;
+        row.hidden = !match;
+        if (match) shown++;
+      });
+      document.getElementById('list').hidden = shown === 0;
+      empty.hidden = shown !== 0;
+      document.getElementById('term').textContent = input.value.trim();
+      document.getElementById('count').textContent = shown + (shown === 1 ? ' event' : ' events');
+    });
+
+    var panel = document.getElementById('performance');
+    var refresh = document.getElementById('refresh');
+    var updated = document.getElementById('updated');
+    refresh.addEventListener('click', function () {
+      if (panel.getAttribute('aria-busy') === 'true') return;
+      panel.setAttribute('aria-busy', 'true');
+      refresh.disabled = true;
+      window.setTimeout(function () {
+        panel.setAttribute('aria-busy', 'false');
+        refresh.disabled = false;
+        updated.textContent = 'Synced just now';
+        draw('7');
+      }, 700);
+    });
+  })();
+</script>
+</body>
+</html>

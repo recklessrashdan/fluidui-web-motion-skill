@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tidewater — Field operations for coastal teams</title>
+<style>
+  :root {
+    --deep: #102f30;
+    --deep-2: #0a2224;
+    --sand: #f5f1e8;
+    --foam: #dfe9e2;
+    --coral: #d87052;
+    --muted: #6c7e79;
+    --ease: cubic-bezier(.22, 1, .36, 1);
+    --pad: clamp(1.25rem, 5vw, 5rem);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--sand); color: var(--deep); font: 400 1rem/1.6 ui-sans-serif, system-ui, sans-serif; }
+  :focus-visible { outline: 2px solid var(--coral); outline-offset: 3px; }
+  .wrap { width: min(1140px, 100% - 2 * var(--pad)); margin-inline: auto; }
+  .eyebrow { font: 700 .7rem/1 ui-monospace, monospace; letter-spacing: .2em; text-transform: uppercase; color: var(--coral); }
+  header { position: sticky; top: 0; z-index: 10; transition: background-color .3s var(--ease), border-color .3s var(--ease); border-bottom: 1px solid transparent; }
+  header.scrolled { background: #f5f1e8ee; border-color: #102f3022; backdrop-filter: blur(10px); }
+  .head { display: flex; align-items: center; gap: 1.5rem; min-height: 72px; flex-wrap: wrap; }
+  .brand { font-family: Georgia, serif; font-size: 1.2rem; letter-spacing: -.03em; text-decoration: none; margin-right: auto; }
+  .brand i { color: var(--coral); font-style: italic; }
+  nav { display: flex; gap: 1.25rem; font-size: .85rem; flex-wrap: wrap; }
+  nav a { text-decoration: none; color: var(--deep); opacity: .78; transition: opacity .2s var(--ease); }
+  nav a:hover, nav a:focus-visible { opacity: 1; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 46px; padding: .75rem 1.3rem; border-radius: 999px; border: 1px solid transparent; font: 600 .85rem/1 ui-sans-serif, system-ui, sans-serif; text-decoration: none; cursor: pointer; transition: transform .22s var(--ease), background-color .22s var(--ease), border-color .22s var(--ease); }
+  .btn:hover { transform: translateY(-2px); }
+  .btn:active { transform: translateY(0) scale(.99); }
+  .btn-dark { background: var(--deep); color: var(--sand); }
+  .btn-dark:hover { background: var(--coral); }
+  .btn-line { border-color: currentColor; color: inherit; background: transparent; }
+  .hero { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(280px, .95fr); gap: clamp(2rem, 6vw, 4rem); align-items: center; padding: clamp(4rem, 10vw, 7.5rem) 0 5rem; }
+  h1 { font: 400 clamp(2.7rem, 7vw, 5.4rem)/1.02 Georgia, serif; letter-spacing: -.045em; margin: 1.25rem 0 1.5rem; max-width: 13ch; }
+  h1 em { color: var(--coral); font-style: italic; }
+  .lede { color: var(--muted); font-size: clamp(1rem, 1.7vw, 1.15rem); max-width: 45ch; margin: 0 0 2rem; }
+  .actions { display: flex; gap: .75rem; flex-wrap: wrap; }
+  .visual { position: relative; aspect-ratio: 1 / 1; width: 100%; max-width: 520px; margin-inline: auto; }
+  .visual::before { content: ""; position: absolute; inset: 8% 6% 12%; border-radius: 48% 52% 46% 54% / 55% 44% 56% 45%; background: radial-gradient(circle at 35% 30%, #6fb4a4, #1c5a58 55%, var(--deep-2)); transform: translate3d(0, var(--drift, 0px), 0) rotate(-6deg); }
+  .visual::after { content: ""; position: absolute; inset: 28% 4% 4% 18%; border: 1px solid #102f3055; border-radius: 50% 48% 52% 44%; transform: translate3d(0, calc(var(--drift, 0px) * .45), 0) rotate(12deg); }
+  .marker { position: absolute; z-index: 1; left: 6%; bottom: 16%; background: var(--sand); border-radius: 10px; padding: .7rem .9rem; box-shadow: 0 14px 40px #0a222433; font: 600 .78rem/1.35 ui-sans-serif, system-ui, sans-serif; transform: translate3d(0, calc(var(--drift, 0px) * .25), 0); }
+  .marker b { display: block; color: var(--coral); font-size: 1.15rem; }
+  .strip { background: var(--deep); color: var(--foam); }
+  .strip-inner { display: grid; grid-template-columns: repeat(3, 1fr); padding: 2rem 0; gap: 1rem; }
+  .strip div { border-left: 1px solid #ffffff38; padding-left: 1rem; }
+  .strip strong { display: block; font: 400 clamp(1.5rem, 3vw, 2.1rem)/1 Georgia, serif; color: #fff; }
+  .strip span { font-size: .78rem; color: #b8ccc4; }
+  .section { padding: clamp(4rem, 9vw, 7rem) 0; }
+  .two { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(2rem, 6vw, 5rem); align-items: start; }
+  .sticky { position: sticky; top: 110px; }
+  .sticky-art { aspect-ratio: 4 / 3; border-radius: 18px; background: linear-gradient(145deg, #c9ddd2, #87b4a7 60%, #477e74); position: relative; overflow: hidden; }
+  .sticky-art::after { content: ""; position: absolute; width: 70%; height: 70%; right: -12%; bottom: -18%; border: 2px solid #ffffff99; border-radius: 50%; }
+  .sticky h2 { font: 400 clamp(1.8rem, 4vw, 2.8rem)/1.1 Georgia, serif; letter-spacing: -.035em; margin: .75rem 0 1rem; }
+  .sticky p { color: var(--muted); }
+  .steps { display: grid; gap: 1rem; }
+  .step { border-top: 1px solid #102f3030; padding: 1.5rem 0 1.25rem; }
+  .step h3 { margin: .6rem 0 .5rem; font-size: 1.15rem; }
+  .step p { margin: 0; color: var(--muted); }
+  .cta { background: var(--coral); color: #fff5ef; text-align: center; }
+  .cta h2 { font: 400 clamp(2rem, 5vw, 3.4rem)/1.1 Georgia, serif; letter-spacing: -.04em; margin: 0 0 1rem; }
+  .cta .btn-line { border-color: #fff5ef; margin-top: 1.5rem; }
+  footer { padding: 2rem 0; color: var(--muted); font-size: .8rem; display: flex; gap: 1rem; justify-content: space-between; flex-wrap: wrap; }
+  .js [data-reveal] { opacity: 0; transform: translateY(18px); transition: opacity .55s var(--ease), transform .55s var(--ease); }
+  .js [data-reveal].is-visible { opacity: 1; transform: none; }
+  @media (max-width: 820px) {
+    .hero, .two { grid-template-columns: 1fr; }
+    .sticky { position: static; }
+    .strip-inner { grid-template-columns: 1fr; gap: 1.25rem; }
+    .visual { max-width: 380px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+    .js [data-reveal] { opacity: 1; transform: none; }
+    .visual::before, .visual::after, .marker { transform: none !important; }
+  }
+</style>
+</head>
+<body>
+<header id="head">
+  <div class="wrap head">
+    <a class="brand" href="#top">Tide<i>water</i></a>
+    <nav aria-label="Primary"><a href="#work">How it works</a><a href="#numbers">Numbers</a><a href="#start">Get started</a></nav>
+  </div>
+</header>
+<main id="top">
+  <section class="wrap hero">
+    <div>
+      <p class="eyebrow" data-reveal>Coastal operations, simplified</p>
+      <h1 data-reveal>Know the tide before it <em>turns.</em></h1>
+      <p class="lede" data-reveal>Tidewater gives harbor teams one calm place for conditions, crews, and daily decisions — built for the dock, not the boardroom.</p>
+      <div class="actions" data-reveal>
+        <a class="btn btn-dark" href="#start">Request a demo</a>
+        <a class="btn btn-line" href="#work">See how it works</a>
+      </div>
+    </div>
+    <div class="visual" data-parallax aria-hidden="true"><div class="marker"><b>04:18</b>Next tide window</div></div>
+  </section>
+  <section class="strip" id="numbers">
+    <div class="wrap strip-inner">
+      <div data-reveal><strong>18</strong><span>harbors in daily use</span></div>
+      <div data-reveal><strong>2.4k</strong><span>crew shifts coordinated</span></div>
+      <div data-reveal><strong>31%</strong><span>less time in spreadsheets</span></div>
+    </div>
+  </section>
+  <section class="section wrap two" id="work">
+    <div class="sticky" data-reveal>
+      <div class="sticky-art" aria-hidden="true"></div>
+      <p class="eyebrow" style="margin-top:1.25rem">Built for the field</p>
+      <h2>A clear view, even when conditions are not.</h2>
+      <p>Information arrives in the order you need it: what changed, who is affected, and what to do next.</p>
+    </div>
+    <div class="steps">
+      <article class="step" data-reveal><p class="eyebrow">01 / Observe</p><h3>Conditions, collected</h3><p>Tide, wind, and swell data land in one place with manual readings from the crew.</p></article>
+      <article class="step" data-reveal><p class="eyebrow">02 / Decide</p><h3>Shifts, planned</h3><p>Assign crews against the tide window and see conflicts before the morning briefing.</p></article>
+      <article class="step" data-reveal><p class="eyebrow">03 / Act</p><h3>Updates, shared</h3><p>One tap sends the plan to every dock terminal; changes stay visible to the whole team.</p></article>
+    </div>
+  </section>
+  <section class="section cta" id="start">
+    <div class="wrap" data-reveal>
+      <p class="eyebrow" style="color:inherit;opacity:.8">Ready when you are</p>
+      <h2>Bring calm to the busy shift.</h2>
+      <a class="btn btn-line" href="mailto:hello@tidewater.example">Request a demo</a>
+    </div>
+  </section>
+</main>
+<footer><div class="wrap"><span>Tidewater · hello@tidewater.example</span><span>Made for people who work near water.</span></div></footer>
+<script>
+  (function () {
+    document.documentElement.classList.add('js');
+    var items = document.querySelectorAll('[data-reveal]');
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('is-visible'); io.unobserve(e.target); } });
+      }, { threshold: .12 });
+      items.forEach(function (el) { io.observe(el); });
+    } else { items.forEach(function (el) { el.classList.add('is-visible'); }); }
+
+    var head = document.getElementById('head');
+    var visual = document.querySelector('[data-parallax]');
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    var ticking = false;
+    function update() {
+      ticking = false;
+      head.classList.toggle('scrolled', window.scrollY > 12);
+      if (!reduce.matches && window.innerWidth > 820) {
+        var shift = Math.max(-40, Math.min(40, window.scrollY * .06));
+        visual.style.setProperty('--drift', shift + 'px');
+      } else { visual.style.removeProperty('--drift'); }
+    }
+    window.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; window.requestAnimationFrame(update); }
+    }, { passive: true });
+    reduce.addEventListener('change', update);
+    update();
+  })();
+</script>
+</body>
+</html>

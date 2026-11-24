@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pocket Market — neighborhood delivery</title>
+<style>
+  :root {
+    --ink: #1d2b24;
+    --muted: #6c7a70;
+    --paper: #ffffff;
+    --bg: #e7ece7;
+    --leaf: #2f7d56;
+    --leaf-dark: #215b3e;
+    --cream: #f7f4ec;
+    --line: #e2e7e1;
+    --ease: cubic-bezier(.2, .8, .2, 1);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 400 .9375rem/1.5 ui-sans-serif, system-ui, sans-serif; }
+  :focus-visible { outline: 2px solid var(--leaf); outline-offset: 2px; }
+  .shell { min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1fr) 430px; align-items: center; gap: clamp(2rem, 6vw, 6rem); padding: clamp(1rem, 4vw, 3rem); }
+  .intro { max-width: 420px; justify-self: end; }
+  .intro h1 { font: 400 clamp(2rem, 4vw, 3.2rem)/1.05 Georgia, serif; letter-spacing: -.04em; margin: .75rem 0 1rem; }
+  .intro p { color: var(--muted); }
+  .eyebrow { font: 700 .7rem ui-monospace, monospace; letter-spacing: .16em; text-transform: uppercase; color: var(--leaf); }
+  .app { background: var(--paper); min-height: min(860px, calc(100vh - 3rem)); border-radius: 28px; box-shadow: 0 30px 80px #1d2b2422; display: flex; flex-direction: column; overflow: hidden; }
+  .app-head { padding: 1.25rem 1.25rem 1rem; border-bottom: 1px solid var(--line); }
+  .row { display: flex; align-items: center; gap: .75rem; }
+  .app-head h2 { font-size: 1.05rem; margin: 0; letter-spacing: -.02em; }
+  .sub { color: var(--muted); font-size: .78rem; margin: .15rem 0 0; }
+  .cart-btn { margin-left: auto; min-width: 44px; min-height: 44px; border: 0; border-radius: 12px; background: var(--cream); color: var(--ink); font: 700 .8rem ui-monospace, monospace; cursor: pointer; position: relative; transition: transform .18s var(--ease), background-color .18s var(--ease); }
+  .cart-btn:hover { background: #e9f1e8; transform: translateY(-1px); }
+  .cart-btn:active { transform: scale(.96); }
+  .body { flex: 1; padding: 1rem 1.25rem 5.5rem; }
+  .chips { display: flex; gap: .4rem; overflow-x: auto; padding-bottom: .5rem; margin-bottom: .75rem; scrollbar-width: none; }
+  .chip { flex: 0 0 auto; min-height: 36px; padding: 0 .8rem; border: 1px solid var(--line); background: #fff; border-radius: 999px; font: 600 .78rem ui-sans-serif, system-ui, sans-serif; color: var(--muted); cursor: pointer; transition: background-color .18s var(--ease), color .18s var(--ease), border-color .18s var(--ease); }
+  .chip:hover { border-color: var(--leaf); }
+  .chip[aria-pressed="true"] { background: var(--leaf); color: #fff; border-color: var(--leaf); }
+  .product { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: .75rem; align-items: center; padding: .85rem 0; border-bottom: 1px solid var(--line); }
+  .product[hidden] { display: none; }
+  .thumb { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; font: 700 1rem Georgia, serif; background: var(--tint, #e6f0e6); color: var(--leaf-dark); }
+  .name { font-weight: 600; }
+  .desc { color: var(--muted); font-size: .76rem; }
+  .price { font: 600 .82rem ui-monospace, monospace; }
+  .stepper { display: inline-flex; align-items: center; gap: .35rem; margin-top: .35rem; }
+  .stepper button { width: 30px; height: 30px; border: 1px solid var(--line); border-radius: 9px; background: #fff; cursor: pointer; font-size: .95rem; line-height: 1; }
+  .stepper button:hover { border-color: var(--leaf); }
+  .stepper output { min-width: 1.5ch; text-align: center; font-variant-numeric: tabular-nums; font-size: .82rem; }
+  .note { background: var(--cream); border-radius: 14px; padding: 1rem; margin-top: 1.25rem; font-size: .8rem; color: var(--muted); }
+  .panel[hidden] { display: none; }
+  .empty-list { padding: 2rem 0; text-align: center; color: var(--muted); }
+  .bottom { position: absolute; bottom: 0; left: 0; right: 0; display: flex; border-top: 1px solid var(--line); background: #ffffffee; backdrop-filter: blur(8px); padding: .4rem .5rem max(.4rem, env(safe-area-inset-bottom)); }
+  .bottom button { flex: 1; min-height: 48px; border: 0; background: transparent; color: var(--muted); font: 600 .72rem ui-sans-serif, system-ui, sans-serif; display: grid; gap: .15rem; place-content: center; cursor: pointer; border-radius: 10px; }
+  .bottom button[aria-selected="true"] { color: var(--leaf); background: #eef5ec; }
+  .bottom button:hover { color: var(--leaf); }
+  .bottom span { font-size: 1rem; }
+  dialog { border: 0; border-radius: 20px; padding: 0; width: min(380px, calc(100% - 2rem)); box-shadow: 0 30px 90px #1d2b2455; color: var(--ink); }
+  dialog::backdrop { background: #14231c88; backdrop-filter: blur(3px); }
+  .dialog-inner { padding: 1.5rem; }
+  .dialog-inner h3 { margin: 0 0 .25rem; font-size: 1.15rem; }
+  .dialog-inner p { color: var(--muted); font-size: .85rem; }
+  .total { display: flex; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 1rem; margin-top: 1rem; font-weight: 700; }
+  .wide { width: 100%; min-height: 46px; margin-top: 1rem; border: 0; border-radius: 12px; background: var(--leaf); color: #fff; font: 700 .875rem ui-sans-serif, system-ui, sans-serif; cursor: pointer; }
+  .wide:hover { background: var(--leaf-dark); }
+  .wide:disabled { opacity: .5; cursor: not-allowed; }
+  .close { border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 1.2rem; float: right; }
+  .toast { position: fixed; left: 50%; bottom: 1.5rem; transform: translate(-50%, 20px); background: var(--ink); color: #fff; padding: .7rem 1.1rem; border-radius: 999px; font-size: .8rem; opacity: 0; pointer-events: none; transition: opacity .25s var(--ease), transform .25s var(--ease); z-index: 20; }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  @media (max-width: 860px) {
+    .shell { display: block; padding: 0; }
+    .intro { display: none; }
+    .app { min-height: 100vh; border-radius: 0; box-shadow: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+    .toast { transform: translate(-50%, 0); }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="intro">
+    <p class="eyebrow">Mobile-first interaction study</p>
+    <h1>Groceries from the block, not the warehouse.</h1>
+    <p>A compact delivery UI with real filters, quantity controls, accessible tabs, a modal cart, and touch-friendly targets. Resize the window: the app becomes the whole page on a phone.</p>
+  </div>
+  <div class="app">
+    <header class="app-head">
+      <div class="row">
+        <div><h2>Pocket Market</h2><p class="sub" id="location">Delivering to Maple Street · 20 min</p></div>
+        <button class="cart-btn" id="cart-open" type="button" aria-haspopup="dialog">Cart <span id="cart-count">0</span></button>
+      </div>
+    </header>
+    <div class="body">
+      <section class="panel" id="view-shop" role="tabpanel" aria-labelledby="tab-shop">
+        <div class="chips" role="group" aria-label="Filter products">
+          <button class="chip" type="button" data-filter="all" aria-pressed="true">All</button>
+          <button class="chip" type="button" data-filter="produce" aria-pressed="false">Produce</button>
+          <button class="chip" type="button" data-filter="bakery" aria-pressed="false">Bakery</button>
+          <button class="chip" type="button" data-filter="drinks" aria-pressed="false">Drinks</button>
+        </div>
+        <div id="products">
+          <div class="product" data-category="produce"><div class="thumb" style="--tint:#e4f0db">A</div><div><div class="name">Apricots</div><div class="desc">Local · 400 g</div><div class="stepper"><button type="button" data-step="-1" data-id="apricots" aria-label="Remove one apricots">−</button><output id="out-apricots">0</output><button type="button" data-step="1" data-id="apricots" aria-label="Add one apricots">+</button></div></div><div class="price">$4.50</div></div>
+          <div class="product" data-category="bakery"><div class="thumb" style="--tint:#f5e7cf">S</div><div><div class="name">Seeded sourdough</div><div class="desc">Baked this morning</div><div class="stepper"><button type="button" data-step="-1" data-id="bread" aria-label="Remove one seeded sourdough">−</button><output id="out-bread">0</output><button type="button" data-step="1" data-id="bread" aria-label="Add one seeded sourdough">+</button></div></div><div class="price">$6.00</div></div>
+          <div class="product" data-category="drinks"><div class="thumb" style="--tint:#dceced">C</div><div><div class="name">Cold brew</div><div class="desc">Unsweetened · 1 L</div><div class="stepper"><button type="button" data-step="-1" data-id="brew" aria-label="Remove one cold brew">−</button><output id="out-brew">0</output><button type="button" data-step="1" data-id="brew" aria-label="Add one cold brew">+</button></div></div><div class="price">$5.25</div></div>
+          <div class="product" data-category="produce"><div class="thumb" style="--tint:#e8f1d8">G</div><div><div class="name">Garden greens</div><div class="desc">Farm share · bunch</div><div class="stepper"><button type="button" data-step="-1" data-id="greens" aria-label="Remove one garden greens">−</button><output id="out-greens">0</output><button type="button" data-step="1" data-id="greens" aria-label="Add one garden greens">+</button></div></div><div class="price">$3.75</div></div>
+        </div>
+        <p class="empty-list" id="empty" hidden>Nothing in this category right now.</p>
+        <div class="note">Prices update with the morning market. Your neighbor packs the order and brings it by.</div>
+      </section>
+      <section class="panel" id="view-orders" role="tabpanel" aria-labelledby="tab-orders" hidden>
+        <h3 style="margin-top:0">Your orders</h3>
+        <p style="color:var(--muted)">No open orders. When you place one, you can follow it here from packing to doorstep.</p>
+        <div class="note">Last delivery · 3 days ago · 6 items</div>
+      </section>
+      <section class="panel" id="view-profile" role="tabpanel" aria-labelledby="tab-profile" hidden>
+        <h3 style="margin-top:0">Profile</h3>
+        <p style="color:var(--muted)">Maple Street, Apartment 4<br>Delivery notes: leave with the front desk.</p>
+        <div class="note">Notifications are on for order updates.</div>
+      </section>
+    </div>
+    <nav class="bottom" role="tablist" aria-label="App sections">
+      <button type="button" id="tab-shop" role="tab" aria-selected="true" aria-controls="view-shop"><span aria-hidden="true">◧</span>Shop</button>
+      <button type="button" id="tab-orders" role="tab" aria-selected="false" aria-controls="view-orders" tabindex="-1"><span aria-hidden="true">◷</span>Orders</button>
+      <button type="button" id="tab-profile" role="tab" aria-selected="false" aria-controls="view-profile" tabindex="-1"><span aria-hidden="true">◉</span>Profile</button>
+    </nav>
+  </div>
+</div>
+<dialog id="cart" aria-labelledby="cart-title">
+  <div class="dialog-inner">
+    <button class="close" type="button" id="cart-close" aria-label="Close cart">×</button>
+    <h3 id="cart-title">Your cart</h3>
+    <p id="cart-summary">Your bag is empty.</p>
+    <div class="total"><span>Total</span><span id="cart-total">$0.00</span></div>
+    <button class="wide" type="button" id="place">Place order</button>
+  </div>
+</dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+  (function () {
+    var prices = { apricots: 4.5, bread: 6, brew: 5.25, greens: 3.75 };
+    var names = { apricots: 'Apricots', bread: 'Seeded sourdough', brew: 'Cold brew', greens: 'Garden greens' };
+    var qty = { apricots: 0, bread: 0, brew: 0, greens: 0 };
+    var money = function (n) { return '$' + n.toFixed(2); };
+    var count = document.getElementById('cart-count');
+    var toast = document.getElementById('toast');
+    var toastTimer;
+    function notify(text) {
+      toast.textContent = text;
+      toast.classList.add('show');
+      window.clearTimeout(toastTimer);
+      toastTimer = window.setTimeout(function () { toast.classList.remove('show'); }, 2400);
+    }
+    document.querySelectorAll('[data-step]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var id = btn.dataset.id;
+        qty[id] = Math.max(0, qty[id] + Number(btn.dataset.step));
+        document.getElementById('out-' + id).textContent = qty[id];
+        updateCart();
+      });
+    });
+    function updateCart() {
+      var items = Object.keys(qty).filter(function (id) { return qty[id] > 0; });
+      var total = items.reduce(function (sum, id) { return sum + qty[id] * prices[id]; }, 0);
+      var n = items.reduce(function (sum, id) { return sum + qty[id]; }, 0);
+      count.textContent = n;
+      document.getElementById('cart-total').textContent = money(total);
+      document.getElementById('cart-summary').textContent = n
+        ? items.map(function (id) { return qty[id] + ' × ' + names[id]; }).join(', ')
+        : 'Your bag is empty.';
+      document.getElementById('place').disabled = n === 0;
+    }
+    updateCart();
+
+    document.querySelectorAll('[data-filter]').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        document.querySelectorAll('[data-filter]').forEach(function (c) { c.setAttribute('aria-pressed', String(c === chip)); });
+        var filter = chip.dataset.filter;
+        var visible = 0;
+        document.querySelectorAll('[data-category]').forEach(function (row) {
+          var match = filter === 'all' || row.dataset.category === filter;
+          row.hidden = !match;
+          if (match) visible++;
+        });
+        document.getElementById('empty').hidden = visible !== 0;
+      });
+    });
+
+    var tabs = Array.prototype.slice.call(document.querySelectorAll('[role="tab"]'));
+    tabs.forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        tabs.forEach(function (t) {
+          var active = t === tab;
+          t.setAttribute('aria-selected', String(active));
+          t.tabIndex = active ? 0 : -1;
+          document.getElementById(t.getAttribute('aria-controls')).hidden = !active;
+        });
+      });
+    });
+
+    var dialog = document.getElementById('cart');
+    document.getElementById('cart-open').addEventListener('click', function () { dialog.showModal(); });
+    document.getElementById('cart-close').addEventListener('click', function () { dialog.close(); });
+    document.getElementById('place').addEventListener('click', function () {
+      dialog.close();
+      notify('Order placed · arriving in about 20 minutes');
+      Object.keys(qty).forEach(function (id) { qty[id] = 0; document.getElementById('out-' + id).textContent = '0'; });
+      updateCart();
+    });
+  })();
+</script>
+</body>
+</html>
