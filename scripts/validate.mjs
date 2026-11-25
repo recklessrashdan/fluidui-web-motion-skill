@@ -74,6 +74,7 @@ check('Required files exist', () => {
   const required = [
     'SKILL.md',
     'README.md',
+    'INSTALLATION.md',
     'LICENSE',
     '.gitignore',
     'CONTRIBUTING.md',
@@ -179,6 +180,8 @@ check('README covers universal installation', () => {
   assert(missing.length === 0, `missing sections: ${missing.join(', ')}`);
   for (const platform of platforms) assert(readme.includes(platform), `README missing platform: ${platform}`);
   assert(readme.includes('git clone --depth 1 https://github.com/recklessrashdan/fluidui-web-motion-skill.git'), 'README missing direct GitHub clone command');
+  assert(readme.includes('[INSTALLATION.md](INSTALLATION.md)'), 'README missing beginner installation guide link');
+  assert(readme.includes('[compatibility matrix](docs/COMPATIBILITY.md)'), 'README missing compatibility matrix link');
   const activations = [
     'make this webpage look premium and modern',
     'improve the motion and responsiveness of this dashboard',
@@ -188,6 +191,72 @@ check('README covers universal installation', () => {
   for (const phrase of activations) assert(readme.includes(phrase), `README missing activation example: ${phrase}`);
   const headings = (readme.match(/^#+ .+$/gm) || []).length;
   return `${headings} headings, ${fences / 2} code blocks, ${platforms.length} platforms`;
+});
+
+check('Installation guide is complete and honest', () => {
+  const guide = read('INSTALLATION.md');
+  const fences = (guide.match(/^```/gm) || []).length;
+  assert(fences % 2 === 0, 'unclosed code fence');
+  const requiredSections = [
+    '1. What FluidUI is',
+    '2. What an AI coding agent is',
+    '3. Before you start',
+    '4. Project-level vs personal installation',
+    '5. Command glossary',
+    '6. Install FluidUI',
+    '7. Verify that FluidUI was discovered and loaded',
+    '8. Update FluidUI safely',
+    '9. Troubleshooting',
+    '10. Uninstall FluidUI',
+    '11. Official documentation',
+  ];
+  const missing = requiredSections.filter((section) => !guide.includes(`## ${section}`));
+  assert(missing.length === 0, `missing sections: ${missing.join(', ')}`);
+  for (const platform of platforms) assert(guide.includes(platform), `guide missing platform: ${platform}`);
+  const clones = (guide.match(/git clone --depth 1 https:\/\/github\.com\/recklessrashdan\/fluidui-web-motion-skill\.git/g) || []).length;
+  assert(clones >= 12, `expected at least 12 copyable clone commands, found ${clones}`);
+  for (const marker of ['mkdir -p', 'New-Item -ItemType Directory -Force', '$HOME', 'Test-Path', 'git --version', 'git -C', 'pull --ff-only', 'gemini skills install', 'gemini skills uninstall fluidui --scope workspace', 'rm -rf', 'Remove-Item -Recurse -Force']) {
+    assert(guide.includes(marker), `guide missing documented command or shell marker: ${marker}`);
+  }
+  for (const url of ['https://agentskills.io/specification.md', 'https://opencode.ai/docs/skills/', 'https://code.claude.com/docs/en/skills.md', 'https://cursor.com/docs/skills', 'https://geminicli.com/docs/cli/skills/', 'https://developers.openai.com/codex/skills.md']) {
+    assert(guide.includes(url), `guide missing official documentation URL: ${url}`);
+  }
+  assert(!guide.includes('cursor.com/docs/skills.md'), 'guide contains stale Cursor documentation URL');
+  assert(/compatibility does not guarantee identical discovery/i.test(guide), 'guide missing compatibility caveat');
+  const verifiedLines = guide.split(/\r?\n/).filter((line) => line.includes('VERIFIED'));
+  assert(verifiedLines.length > 0, 'guide has no verification status');
+  for (const line of verifiedLines) {
+    assert(line.includes('OpenCode'), `VERIFIED claim outside OpenCode: ${line.trim()}`);
+  }
+  for (const platform of ['Claude Code', 'Cursor', 'Gemini CLI', 'Codex']) {
+    assert(/not runtime-tested/i.test(guide), 'guide missing not-runtime-tested disclosure');
+    assert(guide.includes(platform), `guide missing platform: ${platform}`);
+  }
+  return `${requiredSections.length} sections, ${clones} clone commands, honest status labels`;
+});
+
+check('Installation paths match integration guides', () => {
+  const guide = read('INSTALLATION.md');
+  const pathMap = {
+    'opencode.md': ['.opencode/skills/fluidui', '~/.config/opencode/skills/fluidui'],
+    'claude-code.md': ['.claude/skills/fluidui', '~/.claude/skills/fluidui'],
+    'cursor.md': ['.cursor/skills/fluidui', '~/.cursor/skills/fluidui'],
+    'gemini-cli.md': ['.gemini/skills/fluidui', '~/.gemini/skills/fluidui'],
+    'codex.md': ['.agents/skills/fluidui', '$HOME/.agents/skills/fluidui'],
+    'generic-agents.md': ['.agents/skills/fluidui', '~/.agents/skills/fluidui'],
+  };
+  const guidePaths = [
+    '.opencode/skills/fluidui', '.claude/skills/fluidui', '.cursor/skills/fluidui',
+    '.gemini/skills/fluidui', '.agents/skills/fluidui', '~/.config/opencode/skills/fluidui',
+    '~/.claude/skills/fluidui', '~/.cursor/skills/fluidui', '~/.gemini/skills/fluidui',
+    '~/.agents/skills/fluidui',
+  ];
+  for (const p of guidePaths) assert(guide.includes(p), `guide missing install path: ${p}`);
+  for (const [file, paths] of Object.entries(pathMap)) {
+    const text = read(`integrations/${file}`);
+    for (const p of paths) assert(text.includes(p), `${file} missing path: ${p}`);
+  }
+  return `${guidePaths.length} guide paths matched to 6 integration guides`;
 });
 
 check('Platform integration docs are complete', () => {
@@ -200,6 +269,9 @@ check('Platform integration docs are complete', () => {
     assert(/(?:VERIFIED|DOCUMENTED \/ NOT RUNTIME-TESTED|SPEC-CONFORMANT \/ NOT RUNTIME-TESTED)/.test(text), `${rel}: invalid status label`);
     assert(/\.agents\/skills\/fluidui|\.opencode\/skills\/fluidui|\.claude\/skills\/fluidui|\.cursor\/skills\/fluidui|\.gemini\/skills\/fluidui/.test(text), `${rel}: no concrete install path`);
   }
+  const cursor = read('integrations/cursor.md');
+  assert(cursor.includes('https://cursor.com/docs/skills'), 'Cursor guide missing canonical documentation URL');
+  assert(!cursor.includes('cursor.com/docs/skills.md'), 'Cursor guide contains stale documentation URL');
   return `${integrations.length} integration guides`;
 });
 
@@ -207,9 +279,10 @@ check('Compatibility matrix covers all platforms', () => {
   const text = read('docs/COMPATIBILITY.md');
   for (const platform of platforms) assert(text.includes(platform), `matrix missing platform: ${platform}`);
   assert(text.includes('Official sources'), 'matrix missing official sources section');
-  for (const url of ['agentskills.io/specification.md', 'opencode.ai/docs/skills', 'code.claude.com/docs/en/skills.md', 'cursor.com/docs/skills.md', 'geminicli.com/docs/cli/skills/', 'developers.openai.com/codex/skills.md']) {
+  for (const url of ['agentskills.io/specification.md', 'opencode.ai/docs/skills', 'code.claude.com/docs/en/skills.md', 'cursor.com/docs/skills', 'geminicli.com/docs/cli/skills/', 'developers.openai.com/codex/skills.md']) {
     assert(text.includes(url), `matrix missing official source: ${url}`);
   }
+  assert(!text.includes('cursor.com/docs/skills.md'), 'matrix contains stale Cursor documentation URL');
   const rows = (text.match(/^\| (?:OpenCode|Claude Code|Cursor|Gemini CLI|Codex|Generic Agent Skills)/gm) || []).length;
   assert(rows === platforms.length, `expected ${platforms.length} matrix rows, found ${rows}`);
   return `${rows} platform rows with official sources`;

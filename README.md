@@ -32,6 +32,10 @@ The full matrix with official sources and limitations is in [docs/COMPATIBILITY.
 
 ## Installation
 
+**New here?** Read the beginner-friendly [INSTALLATION.md](INSTALLATION.md) for step-by-step commands, explanations, verification, updates, troubleshooting, and uninstall instructions.
+
+The process is the same for every supported agent: clone this repository into the skills directory your agent discovers, keeping the folder name `fluidui`. Supported platforms are OpenCode, Claude Code, Cursor, Gemini CLI, Codex, and other Agent Skills-compatible agents; exact paths and verification status are in the [compatibility matrix](docs/COMPATIBILITY.md).
+
 ### Direct from GitHub (recommended)
 
 Clone the repository into the platform's discovered skills directory. The final folder must be named `fluidui` and contain `SKILL.md` at its root.

@@ -17,7 +17,7 @@
 - Agent Skills client implementation guide: https://agentskills.io/client-implementation/adding-skills-support.md
 - OpenCode skills: https://opencode.ai/docs/skills/
 - Claude Code skills: https://code.claude.com/docs/en/skills.md
-- Cursor Agent Skills: https://cursor.com/docs/skills.md
+- Cursor Agent Skills: https://cursor.com/docs/skills
 - Gemini CLI Agent Skills: https://geminicli.com/docs/cli/skills/
 - Codex skills: https://developers.openai.com/codex/skills.md
 

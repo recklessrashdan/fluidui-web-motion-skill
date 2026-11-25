@@ -1,6 +1,6 @@
 # Cursor integration
 
-**Official documentation:** [Agent Skills](https://cursor.com/docs/skills.md), [Plugins](https://cursor.com/docs/plugins.md), [Plugin reference](https://cursor.com/docs/reference/plugins.md).
+**Official documentation:** [Agent Skills](https://cursor.com/docs/skills), [Plugins](https://cursor.com/docs/plugins), [Plugin reference](https://cursor.com/docs/reference/plugins).
 
 **Support:** Native Agent Skills discovery based on the open standard.
 
